@@ -350,3 +350,5 @@ app.get('/oauth',(req,res) => {
     //return res.json(true);
     return res.sendFile(path.join(__dirname,'./kakaoLoginPage.html'));
 });
+
+app.get("/qstring",(req,res) => res.sendFile( path.join(__dirname, './qstring.html')) );

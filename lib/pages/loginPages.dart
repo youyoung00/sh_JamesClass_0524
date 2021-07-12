@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:sh_selfstudy_ver0417/logic/Connect.dart';
 import 'package:sh_selfstudy_ver0417/logic/kakaoLoginLogic.dart';
 import 'package:sh_selfstudy_ver0417/main.dart';
+import 'package:sh_selfstudy_ver0417/providers/kakaoCodeProvider.dart';
 import 'package:sh_selfstudy_ver0417/providers/loginCheckProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -34,11 +35,15 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   LoginCheckProvider loginCheckProvider;
+  KakaoCodeProvider kakaoCodeProvider;
 
   @override
   Widget build(BuildContext context) {
     if(loginCheckProvider == null){
       loginCheckProvider = Provider.of<LoginCheckProvider>(context);
+    }
+    if(kakaoCodeProvider == null){
+      kakaoCodeProvider = Provider.of<KakaoCodeProvider>(context);
     }
     return Scaffold(
       appBar: AppBar(),
@@ -139,10 +144,49 @@ class _LoginPageState extends State<LoginPage> {
                                 name: "flutter",
                                 onMessageReceived: (JavascriptMessage msg){
                                   print(msg.message);
-                                  if(msg.message == "1"){
-                                    Navigator.of(context).pop();
-                                    loginCheckProvider.setLoginCheck(true);
-                                    Future.microtask(() async => await loginCheckProvider.setLoginCheck(true));
+                                  // if(msg.message == "1"){
+                                  //   Navigator.of(context).pop();
+                                  //   loginCheckProvider.setLoginCheck(true);
+                                  //   Future.microtask(() async => await loginCheckProvider.setLoginCheck(true));
+                                  // }
+                                  // isnotempty - 비어있지 않으면
+                                  if(msg.message.isNotEmpty){
+                                    //kakaoCodeProvider.code = msg.message;
+                                    Future.microtask(() async {
+                                      String AUTHORIZATION_CODE = msg.message;
+                                      String REST_API_KEY = '6187f758d291208aec58fa7c7384014d';
+                                      String REDIRECT_URI = 'http://192.168.219.107:3000/oauth';
+                                      String url = "https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id=$REST_API_KEY&redirect_uri=$REDIRECT_URI&code=$AUTHORIZATION_CODE";
+                                      http.Response res = await http.post(Uri.parse(url));
+                                      print(res.body);
+                                      Map<String, dynamic> result = json.decode(res.body);
+                                      SharedPreferences pref = await SharedPreferences.getInstance();
+                                      bool checkT = await pref.setString("access_token",result['access_token'].toString());
+                                      bool checkRT = await pref.setString("refresh_token", result['refresh_token'].toString());
+                                       if(checkT && checkRT) return true;
+                                      return false;
+                                      // 예외처리 지연처리 들어가야 함.
+                                    })
+                                        .then<bool>((bool check) async{
+                                          if(!check) return await showDialog<bool>(
+                                              context: context,
+                                              builder: (BuildContext context) => AlertDialog(
+                                            title: Text("카카오 로그인을 다시 시도해주세요"),
+                                                actions: [
+                                                  TextButton(
+                                                    child: Text("닫기"),
+                                                    onPressed: () => Navigator.of(context).pop(false),
+                                                  )
+                                                ],
+                                          )
+                                        );
+                                          return check;
+                                    })
+                                    .then<bool>((bool check) async {
+                                      if(check) await loginCheckProvider.setLoginCheck(true);
+                                      return check;
+                                    })
+                                    .then((_) => Navigator.of(context).pop());
                                   }
                                   return;
                                 }

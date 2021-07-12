@@ -11,6 +11,7 @@ import 'package:sh_selfstudy_ver0417/models/mainDataModel.dart';
 import 'package:sh_selfstudy_ver0417/models/subConnectData.dart';
 import 'package:sh_selfstudy_ver0417/models/subModel.dart';
 import 'package:sh_selfstudy_ver0417/pages/loginPages.dart';
+import 'package:sh_selfstudy_ver0417/providers/kakaoCodeProvider.dart';
 import 'package:sh_selfstudy_ver0417/providers/loginCheckProvider.dart';
 import 'package:sh_selfstudy_ver0417/providers/mainProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,8 +40,10 @@ class App extends StatelessWidget {
          //   return provider;
           // }
         ),
-        ChangeNotifierProvider<LoginCheckProvider>(create: (_) => new LoginCheckProvider())
+        ChangeNotifierProvider<LoginCheckProvider>(create: (_) => new LoginCheckProvider()),
+        ChangeNotifierProvider<KakaoCodeProvider>(create: (_) => new KakaoCodeProvider())
       ],
+
       child: new MaterialApp(
         // Widget - Build
         // home: MainPage(), // Build -> items()

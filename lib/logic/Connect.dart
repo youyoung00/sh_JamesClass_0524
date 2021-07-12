@@ -9,7 +9,7 @@ import 'package:sh_selfstudy_ver0417/models/subModel.dart';
 // 연결에 관련한 함수 또는 변수만 사용
 // google.con ->
   class Connect{
-  final String END_POINT = "http://192.168.219.143:3000";
+  final String END_POINT = "http://192.168.219.107:3000";
 
   Future<void> connect()async{
     http.Response res = await http.get(Uri.parse(this.END_POINT));

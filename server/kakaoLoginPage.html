@@ -9,7 +9,11 @@
     <p>카카오 로그인 완료 되었습니다.<p>
         <script>
             setTimeout(
-                () => flutter.postMessage(true), 
+                () => {
+                    var url = window.location.search;
+                    var code = url.split("?code=")[1];
+                    flutter.postMessage(code);
+                }, 
                 3000
             );
         </script>
